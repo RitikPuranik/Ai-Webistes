@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 60% 93%;
+    --foreground: 36 91% 7%;
+    --card: 42 60% 93%;
+    --card-foreground: 36 91% 7%;
+    --popover: 42 60% 93%;
+    --popover-foreground: 36 91% 7%;
+    --primary: 5 40% 42%;
+    --primary-foreground: 45 90% 92%;
+    --secondary: 38 33% 80%;
+    --secondary-foreground: 36 91% 7%;
+    --muted: 38 33% 80%;
+    --muted-foreground: 20 14% 41%;
+    --accent: 38 33% 80%;
+    --accent-foreground: 36 91% 7%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 45 90% 92%;
+    --border: 38 33% 80%;
+    --input: 38 33% 80%;
+    --ring: 5 40% 42%;
+    --radius: 0.5rem;
+    --sidebar-background: 36 91% 7%;
+    --sidebar-foreground: 45 90% 92%;
+    --sidebar-primary: 5 40% 42%;
+    --sidebar-primary-foreground: 45 90% 92%;
+    --sidebar-accent: 36 91% 12%;
+    --sidebar-accent-foreground: 45 90% 92%;
+    --sidebar-border: 36 91% 15%;
+    --sidebar-ring: 5 40% 42%;
+
+    --deep-charcoal: #201502;
+    --saddle-brown: #924942;
+    --cream: #fef5d9;
+    --linen: #f8ebd5;
+    --sand: #e1d5b5;
+    --warm-gray: #7a685a;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--linen);
+    color: var(--deep-charcoal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Newsreader', serif;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Newsreader', serif;
+  }
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+  .text-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .paper-texture {
+    background-image: url('https://images.unsplash.com/photo-1616410011236-7a42121dd981?q=80&w=1932&auto=format&fit=crop');
+    background-blend-mode: multiply;
+    background-size: cover;
+    background-position: center;
+  }
+  .btn-roll {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-roll span {
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-roll:hover span:first-child {
+    transform: translateY(-100%);
+  }
+  .btn-roll:hover span:last-child {
+    transform: translateY(-100%);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
