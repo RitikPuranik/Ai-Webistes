@@ -142,6 +142,12 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     alert('Item added successfully!');
   };
 
+  const handleDeleteItem = (id: string) => {
+    if (confirm('Are you sure you want to remove this item?')) {
+      setMenuItems(prev => prev.filter(item => item.id !== id));
+    }
+  };
+
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -406,34 +412,64 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                 {categories.map((cat, index) => (
                   <div
                     key={cat}
-                    className="flex items-center justify-between p-4 bg-white border border-charcoal/5"
+                    className="flex flex-col p-4 bg-white border border-charcoal/5"
                   >
-                    <span className="font-body text-sm text-charcoal">{cat}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveCategoryUp(index)}
-                        disabled={index === 0}
-                        className={`w-8 h-8 flex items-center justify-center transition-colors ${index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
-                      >
-                        <ArrowUp size={14} className="text-charcoal" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveCategoryDown(index)}
-                        disabled={index === categories.length - 1}
-                        className={`w-8 h-8 flex items-center justify-center transition-colors ${index === categories.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
-                      >
-                        <ArrowDown size={14} className="text-charcoal" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCategory(cat)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-red-50 transition-colors ml-2"
-                      >
-                        <Trash2 size={14} className="text-red-500" />
-                      </button>
+                    <div className="flex items-center justify-between">
+                      <span className="font-body text-sm text-charcoal">{cat}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCategoryUp(index)}
+                          disabled={index === 0}
+                          className={`w-8 h-8 flex items-center justify-center transition-colors ${index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                        >
+                          <ArrowUp size={14} className="text-charcoal" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveCategoryDown(index)}
+                          disabled={index === categories.length - 1}
+                          className={`w-8 h-8 flex items-center justify-center transition-colors ${index === categories.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                        >
+                          <ArrowDown size={14} className="text-charcoal" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(cat)}
+                          className="w-8 h-8 flex items-center justify-center hover:bg-red-50 transition-colors ml-2"
+                        >
+                          <Trash2 size={14} className="text-red-500" />
+                        </button>
+                      </div>
                     </div>
+                    
+                    {(() => {
+                      const categoryItems = menuItems.filter(item => item.category === cat);
+                      if (categoryItems.length === 0) return null;
+                      return (
+                        <div className="mt-4 pt-3 border-t border-charcoal/10 space-y-2">
+                          {categoryItems.map(item => (
+                            <div key={item.id} className="flex items-center justify-between bg-warm-white p-2 border border-charcoal/5">
+                              <div className="flex items-center gap-3">
+                                <img src={item.image} alt={item.name} className="w-8 h-8 object-cover flex-shrink-0" />
+                                <div>
+                                  <span className="font-body text-xs text-charcoal font-medium block">{item.name}</span>
+                                  <span className="font-body text-[10px] text-burnt-orange block">{item.price}</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="w-6 h-6 flex items-center justify-center hover:bg-red-50 transition-colors"
+                                title="Remove item"
+                              >
+                                <X size={12} className="text-red-500" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
