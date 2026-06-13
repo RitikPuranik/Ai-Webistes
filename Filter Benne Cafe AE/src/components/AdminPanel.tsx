@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Edit2, Save, Lock, Coffee } from 'lucide-react';
+import { X, Plus, Trash2, Save, Lock, Coffee, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface MenuItem {
   id: string;
@@ -84,9 +84,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     return stored ? JSON.parse(stored) : defaultMenuItems;
   });
   
-  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [isAdding, setIsAdding] = useState(false);
-  
   const [formData, setFormData] = useState<Omit<MenuItem, 'id'>>({
     name: '',
     description: '',
@@ -96,7 +93,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     tag: '',
   });
 
-  const [activeTab, setActiveTab] = useState<'menu' | 'categories'>('menu');
+  const [activeTab, setActiveTab] = useState<'add-item' | 'categories'>('categories');
   const [categories, setCategories] = useState<string[]>(() => {
     const stored = localStorage.getItem('filterbenne_categories');
     return stored ? JSON.parse(stored) : defaultCategories;
@@ -125,9 +122,15 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     }
   };
 
-  const handleAddItem = () => {
-    setIsAdding(true);
-    setEditingItem(null);
+  const handleSaveItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newItem: MenuItem = {
+      id: Date.now().toString(),
+      ...formData,
+    };
+    setMenuItems(prev => [...prev, newItem]);
+    
     setFormData({
       name: '',
       description: '',
@@ -136,47 +139,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       image: '/assets/food_spread.png',
       tag: '',
     });
-  };
-
-  const handleEditItem = (item: MenuItem) => {
-    setEditingItem(item);
-    setIsAdding(false);
-    setFormData({
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      category: item.category,
-      image: item.image,
-      tag: item.tag || '',
-    });
-  };
-
-  const handleDeleteItem = (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      setMenuItems(prev => prev.filter(item => item.id !== id));
-    }
-  };
-
-  const handleSaveItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (editingItem) {
-      setMenuItems(prev =>
-        prev.map(item =>
-          item.id === editingItem.id
-            ? { ...item, ...formData }
-            : item
-        )
-      );
-      setEditingItem(null);
-    } else if (isAdding) {
-      const newItem: MenuItem = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setMenuItems(prev => [...prev, newItem]);
-      setIsAdding(false);
-    }
+    alert('Item added successfully!');
   };
 
   const handleAddCategory = (e: React.FormEvent) => {
@@ -193,9 +156,24 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     }
   };
 
-  const cancelEdit = () => {
-    setEditingItem(null);
-    setIsAdding(false);
+  const handleMoveCategoryUp = (index: number) => {
+    if (index > 0) {
+      setCategories(prev => {
+        const newCats = [...prev];
+        [newCats[index - 1], newCats[index]] = [newCats[index], newCats[index - 1]];
+        return newCats;
+      });
+    }
+  };
+
+  const handleMoveCategoryDown = (index: number) => {
+    if (index < categories.length - 1) {
+      setCategories(prev => {
+        const newCats = [...prev];
+        [newCats[index + 1], newCats[index]] = [newCats[index], newCats[index + 1]];
+        return newCats;
+      });
+    }
   };
 
   if (!isLoggedIn) {
@@ -267,16 +245,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         {/* Tabs */}
         <div className="flex border-b border-charcoal/10">
           <button
-            onClick={() => setActiveTab('menu')}
-            className={`px-6 py-3 font-body text-xs uppercase tracking-[0.08em] transition-colors ${
-              activeTab === 'menu'
-                ? 'text-burnt-orange border-b-2 border-burnt-orange'
-                : 'text-brown hover:text-charcoal'
-            }`}
-          >
-            Menu Items
-          </button>
-          <button
             onClick={() => setActiveTab('categories')}
             className={`px-6 py-3 font-body text-xs uppercase tracking-[0.08em] transition-colors ${
               activeTab === 'categories'
@@ -286,34 +254,29 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
           >
             Categories
           </button>
+          <button
+            onClick={() => setActiveTab('add-item')}
+            className={`px-6 py-3 font-body text-xs uppercase tracking-[0.08em] transition-colors ${
+              activeTab === 'add-item'
+                ? 'text-burnt-orange border-b-2 border-burnt-orange'
+                : 'text-brown hover:text-charcoal'
+            }`}
+          >
+            Add Items
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
-          {activeTab === 'menu' ? (
+          {activeTab === 'add-item' ? (
             <>
-              {/* Action Bar */}
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-body text-sm text-brown">
-                  {menuItems.length} items in menu
-                </p>
-                <button
-                  onClick={handleAddItem}
-                  className="flex items-center gap-2 bg-burnt-orange text-warm-white font-body text-xs uppercase tracking-[0.08em] px-5 py-3 hover:bg-charcoal transition-colors"
-                >
-                  <Plus size={14} />
-                  Add Item
-                </button>
-              </div>
-
-              {/* Add/Edit Form */}
-              {(isAdding || editingItem) && (
+              {/* Add Form */}
                 <form
                   onSubmit={handleSaveItem}
                   className="bg-white p-6 mb-6 border border-charcoal/10"
                 >
                   <h3 className="font-body text-sm uppercase tracking-[0.08em] text-charcoal mb-4">
-                    {editingItem ? 'Edit Item' : 'New Item'}
+                    New Item
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -414,71 +377,10 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       className="flex items-center gap-2 bg-charcoal text-warm-white font-body text-xs uppercase tracking-[0.08em] px-6 py-3 hover:bg-burnt-orange transition-colors"
                     >
                       <Save size={14} />
-                      {editingItem ? 'Update' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="font-body text-xs uppercase tracking-[0.08em] text-brown px-6 py-3 border border-charcoal/20 hover:bg-charcoal/5 transition-colors"
-                    >
-                      Cancel
+                      Save Item
                     </button>
                   </div>
                 </form>
-              )}
-
-              {/* Items List */}
-              <div className="space-y-3">
-                {menuItems.map(item => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 p-4 bg-white border border-charcoal/5 hover:border-charcoal/20 transition-colors"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover flex-shrink-0"
-                    />
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-body text-sm font-medium text-charcoal truncate">
-                          {item.name}
-                        </h4>
-                        {item.tag && (
-                          <span className="flex-shrink-0 font-body text-[9px] uppercase tracking-[0.06em] bg-burnt-orange/10 text-burnt-orange px-2 py-0.5">
-                            {item.tag}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-body text-xs text-brown truncate">{item.description}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="font-body text-xs text-burnt-orange font-medium">
-                          {item.price}
-                        </span>
-                        <span className="font-body text-[10px] text-brown/50">
-                          {item.category}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleEditItem(item)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-charcoal/10 transition-colors"
-                      >
-                        <Edit2 size={14} className="text-brown" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-red-50 transition-colors"
-                      >
-                        <Trash2 size={14} className="text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </>
           ) : (
             /* Categories Tab */
@@ -501,18 +403,37 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               </form>
 
               <div className="space-y-2">
-                {categories.map(cat => (
+                {categories.map((cat, index) => (
                   <div
                     key={cat}
                     className="flex items-center justify-between p-4 bg-white border border-charcoal/5"
                   >
                     <span className="font-body text-sm text-charcoal">{cat}</span>
-                    <button
-                      onClick={() => handleDeleteCategory(cat)}
-                      className="w-8 h-8 flex items-center justify-center hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 size={14} className="text-red-500" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveCategoryUp(index)}
+                        disabled={index === 0}
+                        className={`w-8 h-8 flex items-center justify-center transition-colors ${index === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                      >
+                        <ArrowUp size={14} className="text-charcoal" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveCategoryDown(index)}
+                        disabled={index === categories.length - 1}
+                        className={`w-8 h-8 flex items-center justify-center transition-colors ${index === categories.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                      >
+                        <ArrowDown size={14} className="text-charcoal" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(cat)}
+                        className="w-8 h-8 flex items-center justify-center hover:bg-red-50 transition-colors ml-2"
+                      >
+                        <Trash2 size={14} className="text-red-500" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
