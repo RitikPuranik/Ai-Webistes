@@ -2,20 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, MapPin } from 'lucide-react';
 
 const headlines = [
-  { main: 'Artisan Roasts', sub: 'Crafted with intention' },
   { main: 'Ghee & Grace', sub: 'South Indian soul' },
   { main: 'Slow Brewed', sub: 'Patience in every cup' },
-  { main: 'Heritage Grains', sub: 'Rooted in tradition' },
-  { main: 'Sweet Endings', sub: 'Made with benne' },
   { main: 'Filter & Benne', sub: 'Coffee, culture, craft' },
 ];
 
 const heroImages = [
-  '/assets/cafe_exterior.jpg',
   '/assets/food_spread.png',
   '/assets/ambience_interior.jpg',
-  '/assets/sign_lit.png',
-  '/assets/rec_ghee_podi_dosa.jpg',
   '/assets/ambience_mural.png',
 ];
 
@@ -87,7 +81,7 @@ export default function Hero() {
                 animation: 'fadeInUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both',
               }}
             >
-              Est. 2024 / Jabalpur
+              Est. 2026 / Jabalpur
             </p>
           </div>
 
@@ -122,7 +116,7 @@ export default function Hero() {
           <div className="overflow-hidden">
             <p
               key={`subline-${currentIndex}`}
-              className="font-body text-sm md:text-base text-warm-white/70 tracking-[0.05em]"
+              className="font-body text-sm md:text-base text-warm-white/70 tracking-[0.05em] hover:text-[#f5f5dc] transition-colors duration-300 cursor-default"
               style={{
                 animation: 'fadeInUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both',
               }}
@@ -174,7 +168,7 @@ export default function Hero() {
           className="flex flex-col gap-3"
           style={{ animation: 'fadeInUp 1s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both' }}
         >
-          {['filter', '&', 'benne', 'filter', '&', 'benne'].map((word, i) => (
+          {['filter', '&', 'benne'].map((word, i) => (
             <div key={i} className="rolling-text-item">
               <div
                 className={`rolling-text-inner font-body text-[10px] uppercase tracking-[0.15em] ${

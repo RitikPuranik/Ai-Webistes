@@ -193,29 +193,6 @@ export default function Menu() {
           })}
         </div>
 
-        {/* Food Collage */}
-        <div
-          className={`mt-24 md:mt-32 transition-all duration-1000 delay-500 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-          }`}
-        >
-          <div className="relative aspect-[16/9] md:aspect-[21/9] overflow-hidden">
-            <img
-              src="/assets/food_collage.jpg"
-              alt="A spread of delicious South Indian dishes"
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 flex items-center justify-center">
-              <div className="text-center">
-                <p className="font-display text-3xl md:text-5xl text-warm-white mb-2">10/10</p>
-                <p className="font-body text-[11px] uppercase tracking-[0.15em] text-warm-white/70">
-                  Rated by our guests
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

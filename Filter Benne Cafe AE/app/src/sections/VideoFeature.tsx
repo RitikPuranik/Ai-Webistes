@@ -39,16 +39,17 @@ export default function VideoFeature() {
 
   return (
     <section ref={sectionRef} className="bg-warm-white">
-      {/* Video Section */}
-      <div className="relative w-full overflow-hidden">
+      {/* Video and Image Split Section */}
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+        {/* Left - Video */}
         <div
-          className={`relative aspect-video max-h-[70vh] transition-all duration-1200 ${
+          className={`relative aspect-square lg:aspect-auto lg:h-[70vh] transition-all duration-1200 ${
             visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >
           <video
             ref={videoRef}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             muted
             loop
             playsInline
@@ -81,6 +82,28 @@ export default function VideoFeature() {
                 <Play size={14} />
                 {isPlaying ? 'Pause' : 'Watch Our Story'}
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right - Food Collage */}
+        <div
+          className={`relative aspect-square lg:aspect-auto lg:h-[70vh] transition-all duration-1200 delay-300 ${
+            visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+          }`}
+        >
+          <img
+            src="/assets/food_collage.jpg"
+            alt="A spread of delicious South Indian dishes"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50 flex items-center justify-center">
+            <div className="text-center">
+              <p className="font-display text-3xl md:text-5xl text-warm-white mb-2" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>10/10</p>
+              <p className="font-body text-[11px] uppercase tracking-[0.15em] text-warm-white/90" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                Rated by our guests
+              </p>
             </div>
           </div>
         </div>

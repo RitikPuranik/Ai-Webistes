@@ -9,6 +9,7 @@ import VideoFeature from './sections/VideoFeature';
 import Footer from './sections/Footer';
 import AdminPanel from './components/AdminPanel';
 import FoodShowcase from './sections/FoodShowcase';
+import Reviews from './sections/Reviews';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,7 @@ function App() {
         <About />
         <Ambience />
         <FoodShowcase />
+        <Reviews />
         <Menu />
         <VideoFeature />
       </main>
