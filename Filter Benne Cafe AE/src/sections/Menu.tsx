@@ -107,10 +107,6 @@ export default function Menu() {
   }, []);
 
   const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
-  
-  const filteredItems = activeCategory === 'All' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === activeCategory);
 
   return (
     <section
