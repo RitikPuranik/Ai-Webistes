@@ -451,7 +451,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                           {categoryItems.map(item => (
                             <div key={item.id} className="flex items-center justify-between bg-warm-white p-2 border border-charcoal/5">
                               <div className="flex items-center gap-3">
-                                <img src={item.image} alt={item.name} className="w-8 h-8 object-cover flex-shrink-0" />
                                 <div>
                                   <span className="font-body text-xs text-charcoal font-medium block">{item.name}</span>
                                   <span className="font-body text-[10px] text-burnt-orange block">{item.price}</span>
