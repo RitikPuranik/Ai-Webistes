@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 const reviewsData = [
   { id: 5, src: '/reviews/fifth.mp4', link: 'https://www.instagram.com/reel/DY7bB4qT_UV/?igsh=OWRsZWZ3OThwbnl4' },
@@ -15,21 +15,49 @@ const reviewsData = [
 
 const VideoCard = ({ review }: { review: typeof reviewsData[0] }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (window.innerWidth < 1024) {
+            if (entry.isIntersecting) {
+              videoRef.current?.play().catch(e => console.log('Autoplay prevented:', e));
+            } else {
+              videoRef.current?.pause();
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-33% 0px -33% 0px',
+        threshold: 0
+      }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleMouseEnter = () => {
-    if (videoRef.current) {
+    if (window.innerWidth >= 1024 && videoRef.current) {
       videoRef.current.play().catch(e => console.log('Autoplay prevented:', e));
     }
   };
 
   const handleMouseLeave = () => {
-    if (videoRef.current) {
+    if (window.innerWidth >= 1024 && videoRef.current) {
       videoRef.current.pause();
     }
   };
 
   return (
     <a
+      ref={containerRef}
       href={review.link}
       target="_blank"
       rel="noopener noreferrer"
