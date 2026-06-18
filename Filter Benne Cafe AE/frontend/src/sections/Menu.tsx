@@ -77,9 +77,8 @@ export default function Menu() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div
-          className={`text-center mb-16 transition-all duration-1000 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
+          className={`text-center mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
         >
           <p className="font-body text-[11px] uppercase tracking-[0.12em] text-burnt-orange mb-4">
             The Collection
@@ -95,19 +94,17 @@ export default function Menu() {
 
         {/* Category Filters */}
         <div
-          className={`flex flex-wrap justify-center gap-3 mb-12 transition-all duration-1000 delay-200 ${
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className={`flex flex-wrap justify-center gap-3 mb-12 transition-all duration-1000 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
         >
           {allFilterCategories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`font-body text-[11px] uppercase tracking-[0.08em] px-5 py-2 transition-all duration-300 ${
-                activeCategory === cat
+              className={`font-body text-[11px] uppercase tracking-[0.08em] px-5 py-2 transition-all duration-300 ${activeCategory === cat
                   ? 'bg-charcoal text-warm-white'
                   : 'bg-transparent text-brown border border-charcoal/20 hover:border-burnt-orange hover:text-burnt-orange'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -122,40 +119,64 @@ export default function Menu() {
             </div>
           ) : menuItems.length === 0 ? (
             <div className="border border-charcoal/10 bg-white/70 p-8 text-center">
-              <h3 className="font-display text-2xl text-charcoal mb-2">No items added yet</h3>
+              <h3 className="font-display text-2xl text-charcoal mb-2">
+                No items added yet
+              </h3>
               <p className="font-body text-sm text-brown">
                 Add items from the admin panel to populate this menu.
               </p>
             </div>
           ) : (
-            (activeCategory === 'All' ? allFilterCategories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
-              const categoryItems = menuItems.filter(item => item.category === category);
+            (activeCategory === "All"
+              ? allFilterCategories.filter(c => c !== "All")
+              : [activeCategory]
+            ).map((category, catIndex) => {
+              const categoryItems = menuItems.filter(
+                item => item.category === category
+              );
+
               if (categoryItems.length === 0) return null;
 
               return (
-                <div 
-                  key={category} 
-                  className={`mb-16 ${visible ? 'animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-both' : 'opacity-0'}`}
+                <div
+                  key={category}
+                  className={`mb-16 ${
+                    visible
+                      ? "animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-both"
+                      : "opacity-0"
+                  }`}
                   style={{ animationDelay: `${catIndex * 0.1 + 0.3}s` }}
                 >
-                <h3 className="font-display text-2xl text-charcoal tracking-widest uppercase mb-4 pl-1">
-                  {category}
-                </h3>
-                <div className="w-full h-[1px] bg-charcoal mb-8"></div>
-                <div className="flex flex-col space-y-6">
-                  {categoryItems.map(item => (
-                    <div key={item._id} className="flex flex-col">
-                      <div className="flex justify-between items-baseline gap-4 w-full">
-                        <h4 className="font-body text-lg text-charcoal shrink-0">{item.name}</h4>
-                        <div className="flex-grow border-b-2 border-dotted border-charcoal/30 shrink relative" style={{ top: '-4px' }}></div>
-                        <span className="font-body text-lg text-charcoal font-medium shrink-0">{item.price}</span>
+                  <h3 className="font-display text-2xl text-charcoal tracking-widest uppercase mb-4 pl-1">
+                    {category}
+                  </h3>
+
+                  <div className="w-full h-[1px] bg-charcoal mb-8"></div>
+
+                  <div className="flex flex-col space-y-6">
+                    {categoryItems.map(item => (
+                      <div key={item._id} className="flex flex-col">
+                        <div className="flex justify-between items-baseline gap-4 w-full">
+                          <h4 className="font-body text-lg text-charcoal shrink-0">
+                            {item.name}
+                          </h4>
+
+                          <div
+                            className="flex-grow border-b-2 border-dotted border-charcoal/30 shrink relative"
+                            style={{ top: "-4px" }}
+                          ></div>
+
+                          <span className="font-body text-lg text-charcoal font-medium shrink-0">
+                            {item.price}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
       </div>
