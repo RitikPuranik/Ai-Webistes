@@ -71,6 +71,8 @@ const VideoCard = ({ review }: { review: typeof reviewsData[0] }) => {
         loop
         muted
         playsInline
+        preload="metadata"
+        crossOrigin="anonymous"
         className="w-full h-auto block object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-300"
       />
       {/* Play Icon Overlay (visible when not hovered, or just as a hint) */}

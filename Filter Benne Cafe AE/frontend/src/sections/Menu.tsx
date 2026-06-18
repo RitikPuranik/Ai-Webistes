@@ -7,14 +7,18 @@ export default function Menu() {
   const [menuItems, setMenuItems] = useState<ApiMenuItem[]>([]);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
+      setIsLoading(true);
       const [items, cats] = await Promise.all([getMenuItems(), getCategories()]);
       setMenuItems(items);
       setCategories(cats);
     } catch (err) {
       console.error('Failed to fetch menu data:', err);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -111,25 +115,29 @@ export default function Menu() {
         </div>
 
         {/* Menu Grid */}
-        <div className="max-w-4xl mx-auto">
-          {menuItems.length === 0 && (
+        <div className="max-w-4xl mx-auto min-h-[400px]">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-charcoal"></div>
+            </div>
+          ) : menuItems.length === 0 ? (
             <div className="border border-charcoal/10 bg-white/70 p-8 text-center">
               <h3 className="font-display text-2xl text-charcoal mb-2">No items added yet</h3>
               <p className="font-body text-sm text-brown">
                 Add items from the admin panel to populate this menu.
               </p>
             </div>
-          )}
-          {(activeCategory === 'All' ? allFilterCategories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
-            const categoryItems = menuItems.filter(item => item.category === category);
-            if (categoryItems.length === 0) return null;
+          ) : (
+            (activeCategory === 'All' ? allFilterCategories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
+              const categoryItems = menuItems.filter(item => item.category === category);
+              if (categoryItems.length === 0) return null;
 
-            return (
-              <div 
-                key={category} 
-                className={`mb-16 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
-                style={{ transitionDelay: `${catIndex * 0.1 + 0.3}s` }}
-              >
+              return (
+                <div 
+                  key={category} 
+                  className={`mb-16 ${visible ? 'animate-in fade-in slide-in-from-bottom-12 duration-1000 fill-mode-both' : 'opacity-0'}`}
+                  style={{ animationDelay: `${catIndex * 0.1 + 0.3}s` }}
+                >
                 <h3 className="font-display text-2xl text-charcoal tracking-widest uppercase mb-4 pl-1">
                   {category}
                 </h3>
