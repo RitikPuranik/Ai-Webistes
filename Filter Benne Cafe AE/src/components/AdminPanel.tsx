@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Save, Lock, Coffee, ArrowUp, ArrowDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MenuItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: string;
   category: string;
-  image: string;
+  image?: string;
   tag?: string;
 }
 
@@ -15,64 +16,27 @@ interface AdminPanelProps {
   onClose: () => void;
 }
 
-const defaultCategories = ['Signature', 'Idli', 'Dosa', 'Beverages', 'Rice', 'Desserts'];
+const defaultCategories = ['Signature', 'Benne Dosas', 'Uttapams', 'Rice', 'Idli', 'Vada', 'Beverages', 'Sweet', 'Breakfast Special'];
 
-const defaultMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Benne Masala Dosa',
-    description: 'Crispy dosa roasted in pure ghee, stuffed with spiced potato filling',
-    price: '\u20b9185',
-    category: 'Signature',
-    image: '/assets/rec_ghee_podi_dosa.jpg',
-    tag: 'Bestseller',
-  },
-  {
-    id: '2',
-    name: 'Thatte Idli',
-    description: 'Flat, pillowy idli served with sambar and chutney',
-    price: '\u20b995',
-    category: 'Idli',
-    image: '/assets/rec_thatte_idli.jpg',
-    tag: 'Must Try',
-  },
-  {
-    id: '3',
-    name: 'Traditional Filter Coffee',
-    description: 'Authentic South Indian filter coffee',
-    price: '\u20b985',
-    category: 'Beverages',
-    image: '/assets/food_spread.png',
-    tag: 'Popular',
-  },
-  {
-    id: '4',
-    name: 'Bisi Bele Bhath',
-    description: 'Wholesome rice dish with lentils and vegetables',
-    price: '\u20b9145',
-    category: 'Rice',
-    image: '/assets/rec_bisi_bele_bhath.jpg',
-    tag: 'New',
-  },
-  {
-    id: '5',
-    name: 'Kesari Baat',
-    description: 'Sweet semolina pudding with cashews',
-    price: '\u20b9120',
-    category: 'Desserts',
-    image: '/assets/rec_kesari_baat.jpg',
-    tag: 'Sweet',
-  },
-  {
-    id: '6',
-    name: 'Baby Podi Idli',
-    description: 'Mini idlis tossed in spicy gunpowder masala',
-    price: '\u20b9115',
-    category: 'Idli',
-    image: '/assets/rec_baby_podi_idli.jpg',
-    tag: 'Loved it',
-  },
-];
+const orderCategories = (categoryList: string[]) => {
+  return Array.from(new Set(categoryList));
+};
+
+const categoryDefaultImages: Record<string, string> = {
+  Signature: '/assets/rec_ghee_podi_dosa.jpg',
+  Idli: '/assets/rec_thatte_idli.jpg',
+  Dosa: '/assets/rec_ghee_podi_dosa.jpg',
+  'Benne Dosas': '/assets/rec_ghee_podi_dosa.jpg',
+  Uttapams: '/assets/food_spread.png',
+  Vada: '/assets/food_spread.png',
+  Beverages: '/assets/food_spread.png',
+  Rice: '/assets/rec_bisi_bele_bhath.jpg',
+  Sweet: '/assets/rec_kesari_baat.jpg',
+};
+
+const getDefaultImageForCategory = (category: string) => {
+  return categoryDefaultImages[category] || '/assets/food_spread.png';
+};
 
 export default function AdminPanel({ onClose }: AdminPanelProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -81,24 +45,22 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     const stored = localStorage.getItem('filterbenne_menu');
-    return stored ? JSON.parse(stored) : defaultMenuItems;
+    return stored ? JSON.parse(stored) : [];
   });
   
-  const [formData, setFormData] = useState<Omit<MenuItem, 'id'>>({
+  const [formData, setFormData] = useState<Pick<MenuItem, 'name' | 'price' | 'category'>>({
     name: '',
-    description: '',
     price: '',
     category: 'Signature',
-    image: '/assets/food_spread.png',
-    tag: '',
   });
 
   const [activeTab, setActiveTab] = useState<'add-item' | 'categories'>('categories');
   const [categories, setCategories] = useState<string[]>(() => {
     const stored = localStorage.getItem('filterbenne_categories');
-    return stored ? JSON.parse(stored) : defaultCategories;
+    return stored ? orderCategories(JSON.parse(stored)) : defaultCategories;
   });
   const [newCategory, setNewCategory] = useState('');
+  const orderedCategories = orderCategories(categories);
 
   // Save menu items to localStorage whenever they change
   useEffect(() => {
@@ -107,7 +69,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
   }, [menuItems]);
 
   useEffect(() => {
-    localStorage.setItem('filterbenne_categories', JSON.stringify(categories));
+    localStorage.setItem('filterbenne_categories', JSON.stringify(orderCategories(categories)));
   }, [categories]);
 
   const handleLogin = (e: React.FormEvent) => {
@@ -128,38 +90,90 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     const newItem: MenuItem = {
       id: Date.now().toString(),
       ...formData,
+      image: getDefaultImageForCategory(formData.category),
     };
     setMenuItems(prev => [...prev, newItem]);
     
     setFormData({
       name: '',
-      description: '',
       price: '',
-      category: categories[0] || 'Signature',
-      image: '/assets/food_spread.png',
-      tag: '',
+      category: categories[0] || 'Benne Dosas',
     });
-    alert('Item added successfully!');
+    toast.success('Menu item added', {
+      description: `${newItem.name} is now live in ${newItem.category}.`,
+    });
   };
 
   const handleDeleteItem = (id: string) => {
-    if (confirm('Are you sure you want to remove this item?')) {
-      setMenuItems(prev => prev.filter(item => item.id !== id));
-    }
+    const itemToDelete = menuItems.find(item => item.id === id);
+    if (!itemToDelete) return;
+
+    toast.warning('Remove this menu item?', {
+      description: `${itemToDelete.name} will be permanently removed.`,
+      duration: 9000,
+      action: {
+        label: 'Delete',
+        onClick: () => {
+          setMenuItems(prev => prev.filter(item => item.id !== id));
+          toast.success('Item removed');
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      setCategories(prev => [...prev, newCategory.trim()]);
+      const addedCategory = newCategory.trim();
+      setCategories(prev => orderCategories([...prev, addedCategory]));
+      toast.success('Category added', {
+        description: `${addedCategory} is now available in the item form.`,
+      });
       setNewCategory('');
+      return;
     }
+
+    if (!newCategory.trim()) {
+      toast.error('Category name is required');
+      return;
+    }
+
+    toast.info('Category already exists', {
+      description: 'Try a different name.',
+    });
   };
 
   const handleDeleteCategory = (cat: string) => {
-    if (confirm('Delete this category? Items in this category will remain but show without a category.')) {
-      setCategories(prev => prev.filter(c => c !== cat));
+    const categoryItems = menuItems.filter(item => item.category === cat);
+
+    if (categoryItems.length > 0) {
+      toast.error('Delete all items first', {
+        description: `${cat} still has ${categoryItems.length} item${categoryItems.length === 1 ? '' : 's'} in it. Remove those items before deleting the category.`,
+      });
+      return;
     }
+
+    toast.warning('Delete this category?', {
+      description: 'This category is empty and can be removed now.',
+      duration: 9000,
+      action: {
+        label: 'Delete',
+        onClick: () => {
+          setCategories(prev => orderCategories(prev.filter(c => c !== cat)));
+          toast.success('Category deleted', {
+            description: `${cat} has been removed from filters.`,
+          });
+        },
+      },
+      cancel: {
+        label: 'Cancel',
+        onClick: () => {},
+      },
+    });
   };
 
   const handleMoveCategoryUp = (index: number) => {
@@ -167,7 +181,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       setCategories(prev => {
         const newCats = [...prev];
         [newCats[index - 1], newCats[index]] = [newCats[index], newCats[index - 1]];
-        return newCats;
+        return orderCategories(newCats);
       });
     }
   };
@@ -177,9 +191,55 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       setCategories(prev => {
         const newCats = [...prev];
         [newCats[index + 1], newCats[index]] = [newCats[index], newCats[index + 1]];
-        return newCats;
+        return orderCategories(newCats);
       });
     }
+  };
+
+  const handleMoveItemUp = (itemId: string) => {
+    setMenuItems(prev => {
+      const index = prev.findIndex(item => item.id === itemId);
+      if (index === -1) return prev;
+      const item = prev[index];
+      
+      let prevSameCategoryIndex = -1;
+      for (let i = index - 1; i >= 0; i--) {
+        if (prev[i].category === item.category) {
+          prevSameCategoryIndex = i;
+          break;
+        }
+      }
+
+      if (prevSameCategoryIndex !== -1) {
+        const newItems = [...prev];
+        [newItems[prevSameCategoryIndex], newItems[index]] = [newItems[index], newItems[prevSameCategoryIndex]];
+        return newItems;
+      }
+      return prev;
+    });
+  };
+
+  const handleMoveItemDown = (itemId: string) => {
+    setMenuItems(prev => {
+      const index = prev.findIndex(item => item.id === itemId);
+      if (index === -1) return prev;
+      const item = prev[index];
+      
+      let nextSameCategoryIndex = -1;
+      for (let i = index + 1; i < prev.length; i++) {
+        if (prev[i].category === item.category) {
+          nextSameCategoryIndex = i;
+          break;
+        }
+      }
+
+      if (nextSameCategoryIndex !== -1) {
+        const newItems = [...prev];
+        [newItems[nextSameCategoryIndex], newItems[index]] = [newItems[index], newItems[nextSameCategoryIndex]];
+        return newItems;
+      }
+      return prev;
+    });
   };
 
   if (!isLoggedIn) {
@@ -322,59 +382,14 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                         className="w-full border border-charcoal/20 px-3 py-2 font-body text-sm bg-transparent focus:border-burnt-orange transition-colors"
                       >
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        {orderedCategories.map(cat => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
                         ))}
                       </select>
                     </div>
                     
-                    <div>
-                      <label className="block font-body text-[10px] uppercase tracking-[0.08em] text-brown mb-1">
-                        Tag
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.tag}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tag: e.target.value }))}
-                        placeholder="e.g. Bestseller"
-                        className="w-full border border-charcoal/20 px-3 py-2 font-body text-sm bg-transparent focus:border-burnt-orange transition-colors"
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <label className="block font-body text-[10px] uppercase tracking-[0.08em] text-brown mb-1">
-                        Description *
-                      </label>
-                      <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        required
-                        rows={2}
-                        className="w-full border border-charcoal/20 px-3 py-2 font-body text-sm bg-transparent focus:border-burnt-orange transition-colors resize-none"
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <label className="block font-body text-[10px] uppercase tracking-[0.08em] text-brown mb-1">
-                        Image Path
-                      </label>
-                      <select
-                        value={formData.image}
-                        onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                        className="w-full border border-charcoal/20 px-3 py-2 font-body text-sm bg-transparent focus:border-burnt-orange transition-colors"
-                      >
-                        <option value="/assets/food_spread.png">Food Spread</option>
-                        <option value="/assets/rec_ghee_podi_dosa.jpg">Ghee Podi Dosa</option>
-                        <option value="/assets/rec_thatte_idli.jpg">Thatte Idli</option>
-                        <option value="/assets/rec_bisi_bele_bhath.jpg">Bisi Bele Bhath</option>
-                        <option value="/assets/rec_kesari_baat.jpg">Kesari Baat</option>
-                        <option value="/assets/rec_baby_podi_idli.jpg">Baby Podi Idli</option>
-                        <option value="/assets/food_collage.jpg">Food Collage</option>
-                        <option value="/assets/cafe_exterior.jpg">Cafe Exterior</option>
-                        <option value="/assets/ambience_mural.png">Ambience Mural</option>
-                        <option value="/assets/ambience_interior.jpg">Ambience Interior</option>
-                      </select>
-                    </div>
                   </div>
 
                   <div className="flex gap-3">
@@ -448,7 +463,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                       if (categoryItems.length === 0) return null;
                       return (
                         <div className="mt-4 pt-3 border-t border-charcoal/10 space-y-2">
-                          {categoryItems.map(item => (
+                          {categoryItems.map((item, itemIndex) => (
                             <div key={item.id} className="flex items-center justify-between bg-warm-white p-2 border border-charcoal/5">
                               <div className="flex items-center gap-3">
                                 <div>
@@ -456,14 +471,34 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                                   <span className="font-body text-[10px] text-burnt-orange block">{item.price}</span>
                                 </div>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="w-6 h-6 flex items-center justify-center hover:bg-red-50 transition-colors"
-                                title="Remove item"
-                              >
-                                <X size={12} className="text-red-500" />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveItemUp(item.id)}
+                                  disabled={itemIndex === 0}
+                                  className={`w-6 h-6 flex items-center justify-center transition-colors ${itemIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                                  title="Move Up"
+                                >
+                                  <ArrowUp size={12} className="text-charcoal" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveItemDown(item.id)}
+                                  disabled={itemIndex === categoryItems.length - 1}
+                                  className={`w-6 h-6 flex items-center justify-center transition-colors ${itemIndex === categoryItems.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
+                                  title="Move Down"
+                                >
+                                  <ArrowDown size={12} className="text-charcoal" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="w-6 h-6 flex items-center justify-center hover:bg-red-50 transition-colors ml-1"
+                                  title="Remove item"
+                                >
+                                  <X size={12} className="text-red-500" />
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -475,8 +510,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
               <div className="mt-6 p-4 bg-sand/30">
                 <p className="font-body text-xs text-brown">
-                  <strong>Note:</strong> Deleting a category will not delete menu items in that category. 
-                  They will still be visible but without a category filter.
+                  <strong>Note:</strong> Delete all items in a category first. Empty categories can then be removed.
                 </p>
               </div>
             </>

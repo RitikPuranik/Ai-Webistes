@@ -53,7 +53,7 @@ export default function Navigation({ scrolled }: NavigationProps) {
               hidden && !menuOpen ? 'text-warm-white' : 'text-charcoal'
             }`}
           >
-            Filter <span className="text-burnt-orange">&</span> Benne
+            {import.meta.env.VITE_CAFE_NAME || 'Filter & Benne'}
           </a>
 
           {/* Desktop Nav Links */}
@@ -76,14 +76,14 @@ export default function Navigation({ scrolled }: NavigationProps) {
           <div className="flex items-center gap-4">
             {/* Location link */}
             <a
-              href="https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"
+              href={import.meta.env.VITE_MAP_URL || "https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"}
               target="_blank"
               rel="noopener noreferrer"
               className={`hidden md:block font-body text-xs uppercase tracking-[0.08em] transition-colors duration-300 ${
                 hidden && !menuOpen ? 'text-warm-white/60 hover:text-burnt-orange' : 'text-charcoal/50 hover:text-burnt-orange'
               }`}
             >
-              Jabalpur
+              {import.meta.env.VITE_CAFE_LOCATION || 'Jabalpur'}
             </a>
 
             {/* Mobile menu toggle */}
@@ -122,12 +122,12 @@ export default function Navigation({ scrolled }: NavigationProps) {
 
           <div className="mt-8 pt-8 border-t border-white/10">
             <a
-              href="https://www.instagram.com/filterbenne/"
+              href={import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/filterbenne/"}
               target="_blank"
               rel="noopener noreferrer"
               className="font-body text-xs uppercase tracking-[0.15em] text-warm-white/50 hover:text-burnt-orange transition-colors"
             >
-              @filterbenne
+              {import.meta.env.VITE_INSTAGRAM_HANDLE || '@filterbenne'}
             </a>
           </div>
         </div>

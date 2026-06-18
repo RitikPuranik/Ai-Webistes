@@ -10,11 +10,16 @@ import Footer from './sections/Footer';
 import AdminPanel from './components/AdminPanel';
 import FoodShowcase from './sections/FoodShowcase';
 import Reviews from './sections/Reviews';
+import { Toaster } from './components/ui/sonner';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    // Migration logic removed to ensure menu is driven entirely by admin data
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -76,6 +81,22 @@ function App() {
           Admin
         </button>
       </div>
+
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        toastOptions={{
+          duration: 3500,
+          classNames: {
+            toast: 'font-body border border-charcoal/10',
+            title: 'font-body text-sm',
+            description: 'font-body text-xs',
+            actionButton: 'font-body text-xs uppercase tracking-[0.08em]',
+            cancelButton: 'font-body text-xs uppercase tracking-[0.08em]',
+          },
+        }}
+      />
     </div>
   );
 }

@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, MapPin } from 'lucide-react';
 
 const headlines = [
-  { main: 'Ghee & Grace', sub: 'South Indian soul' },
-  { main: 'Slow Brewed', sub: 'Patience in every cup' },
-  { main: 'Filter & Benne', sub: 'Coffee, culture, craft' },
+  { main: import.meta.env.VITE_HERO_H1_MAIN || 'Ghee & Grace', sub: import.meta.env.VITE_HERO_H1_SUB || 'South Indian soul' },
+  { main: import.meta.env.VITE_HERO_H2_MAIN || 'Slow Brewed', sub: import.meta.env.VITE_HERO_H2_SUB || 'Patience in every cup' },
+  { main: import.meta.env.VITE_HERO_H3_MAIN || 'Filter & Benne', sub: import.meta.env.VITE_HERO_H3_SUB || 'Coffee, culture, craft' },
 ];
 
 const heroImages = [
@@ -81,12 +81,12 @@ export default function Hero() {
                 animation: 'fadeInUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both',
               }}
             >
-              Est. 2026 / Jabalpur
+              {import.meta.env.VITE_ESTABLISHED_YEAR || 'Est. 2026'} / {import.meta.env.VITE_CAFE_LOCATION || 'Jabalpur'}
             </p>
           </div>
 
           <a
-            href="https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"
+            href={import.meta.env.VITE_MAP_URL || "https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-warm-white/60 hover:text-burnt-orange transition-colors"
@@ -168,11 +168,15 @@ export default function Hero() {
           className="flex flex-col gap-3"
           style={{ animation: 'fadeInUp 1s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both' }}
         >
-          {['filter', '&', 'benne'].map((word, i) => (
+          {[
+            import.meta.env.VITE_ROLLING_WORD1 || 'filter',
+            import.meta.env.VITE_ROLLING_WORD2 || '&',
+            import.meta.env.VITE_ROLLING_WORD3 || 'benne'
+          ].map((word, i) => (
             <div key={i} className="rolling-text-item">
               <div
                 className={`rolling-text-inner font-body text-[10px] uppercase tracking-[0.15em] ${
-                  word === '&' ? 'text-burnt-orange' : 'text-warm-white/40'
+                  word === (import.meta.env.VITE_ROLLING_WORD2 || '&') ? 'text-burnt-orange' : 'text-warm-white/40'
                 }`}
                 style={{
                   transform: currentIndex % 2 === 0 ? 'translateY(0)' : 'translateY(-50%)',
@@ -189,7 +193,7 @@ export default function Hero() {
       {/* Instagram link */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
         <a
-          href="https://www.instagram.com/filterbenne/"
+          href={import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/filterbenne/"}
           target="_blank"
           rel="noopener noreferrer"
           className="font-body text-[10px] uppercase tracking-[0.15em] text-warm-white/40 hover:text-burnt-orange transition-colors"
@@ -199,7 +203,7 @@ export default function Hero() {
             animation: 'fadeInUp 1s 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
           }}
         >
-          @filterbenne
+          {import.meta.env.VITE_INSTAGRAM_HANDLE || '@filterbenne'}
         </a>
       </div>
     </section>

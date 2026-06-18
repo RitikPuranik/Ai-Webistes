@@ -49,10 +49,7 @@ export default function About() {
               </h2>
 
               <p className="font-body text-sm md:text-base text-brown leading-relaxed">
-                Nestled in the heart of Jabalpur, Filter & Benne is a love letter to South Indian 
-                cafe culture. We source single-origin beans from the hills of Chikmagalur and pair 
-                them with timeless recipes passed through generations — dosas crisped in pure ghee, 
-                filter coffee decoction simmered to perfection, and sweets that carry the warmth of home.
+                {import.meta.env.VITE_ABOUT_PARAGRAPH1 || 'Nestled in the heart of Jabalpur, Filter & Benne is a love letter to South Indian cafe culture. We source single-origin beans from the hills of Chikmagalur and pair them with timeless recipes passed through generations \u2014 dosas crisped in pure ghee, filter coffee decoction simmered to perfection, and sweets that carry the warmth of home.'}
               </p>
             </div>
 
@@ -63,8 +60,8 @@ export default function About() {
             >
               <p className="font-body text-sm text-brown/70 leading-relaxed mb-8">
                 Our name celebrates two pillars of South Indian culinary heritage: the iconic 
-                <span className="text-burnt-orange"> Filter Coffee</span> that awakens the senses, 
-                and <span className="text-burnt-orange">Benne</span> (ghee) — the golden elixir 
+                <span className="text-burnt-orange"> {import.meta.env.VITE_ABOUT_HIGHLIGHT1 || 'Filter Coffee'}</span> that awakens the senses, 
+                and <span className="text-burnt-orange">{import.meta.env.VITE_ABOUT_HIGHLIGHT2 || 'Benne'}</span> (ghee) — the golden elixir 
                 that transforms every dish into something extraordinary.
               </p>
 

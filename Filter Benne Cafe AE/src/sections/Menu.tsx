@@ -3,78 +3,41 @@ import { useEffect, useRef, useState } from 'react';
 interface MenuItem {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   price: string;
   category: string;
-  image: string;
+  image?: string;
   tag?: string;
 }
 
-const defaultMenuItems: MenuItem[] = [
-  {
-    id: '1',
-    name: 'Benne Masala Dosa',
-    description: 'Crispy dosa roasted in pure ghee, stuffed with spiced potato filling',
-    price: '\u20b9185',
-    category: 'Signature',
-    image: '/assets/rec_ghee_podi_dosa.jpg',
-    tag: 'Bestseller',
-  },
-  {
-    id: '2',
-    name: 'Thatte Idli',
-    description: 'Flat, pillowy idli served with sambar and chutney — "omg too good"',
-    price: '\u20b995',
-    category: 'Idli',
-    image: '/assets/rec_thatte_idli.jpg',
-    tag: 'Must Try',
-  },
-  {
-    id: '3',
-    name: 'Traditional Filter Coffee',
-    description: 'Authentic South Indian filter coffee, decoction brewed to perfection',
-    price: '\u20b985',
-    category: 'Beverages',
-    image: '/assets/food_spread.png',
-    tag: 'Popular',
-  },
-  {
-    id: '4',
-    name: 'Bisi Bele Bhath',
-    description: 'A wholesome rice dish cooked with lentils, vegetables and spices',
-    price: '\u20b9145',
-    category: 'Rice',
-    image: '/assets/rec_bisi_bele_bhath.jpg',
-    tag: 'New',
-  },
-  {
-    id: '5',
-    name: 'Kesari Baat',
-    description: 'Sweet semolina pudding garnished with cashews and coconut',
-    price: '\u20b9120',
-    category: 'Desserts',
-    image: '/assets/rec_kesari_baat.jpg',
-    tag: 'Sweet',
-  },
-  {
-    id: '6',
-    name: 'Baby Podi Idli',
-    description: 'Mini idlis tossed in spicy gunpowder masala with ghee tadka',
-    price: '\u20b9115',
-    category: 'Idli',
-    image: '/assets/rec_baby_podi_idli.jpg',
-    tag: 'Loved it',
-  },
-];
+const normalizeLabel = (value: string) => {
+  const labelMap: Record<string, string> = {
+    'Heritage Uttapams': 'Uttapams',
+    'Traditional Sweert Finishes': 'Sweet',
+    Desserts: 'Sweet',
+  };
+
+  return labelMap[value] || value;
+};
+
+const normalizeMenuItem = (item: MenuItem): MenuItem => ({
+  ...item,
+  category: normalizeLabel(item.category),
+  tag: item.tag ? normalizeLabel(item.tag) : item.tag,
+});
 
 export default function Menu() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     const stored = localStorage.getItem('filterbenne_menu');
-    return stored ? JSON.parse(stored) : defaultMenuItems;
+    return stored ? JSON.parse(stored).map(normalizeMenuItem) : [];
   });
   const [activeCategory, setActiveCategory] = useState('All');
+  const [adminCategories, setAdminCategories] = useState<string[]>(() => {
+    const stored = localStorage.getItem('filterbenne_categories');
+    return stored ? JSON.parse(stored) : [];
+  });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -94,19 +57,32 @@ export default function Menu() {
     return () => observer.disconnect();
   }, []);
 
-  // Listen for menu updates from admin panel
   useEffect(() => {
     const handleStorage = () => {
-      const stored = localStorage.getItem('filterbenne_menu');
-      if (stored) {
-        setMenuItems(JSON.parse(stored));
+      const storedMenu = localStorage.getItem('filterbenne_menu');
+      if (storedMenu) {
+        setMenuItems(JSON.parse(storedMenu).map(normalizeMenuItem));
+      } else {
+        setMenuItems([]);
+      }
+      const storedCats = localStorage.getItem('filterbenne_categories');
+      if (storedCats) {
+        setAdminCategories(JSON.parse(storedCats));
       }
     };
+
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const categories = ['All', ...Array.from(new Set(menuItems.map(item => item.category)))];
+  const menuCategories = Array.from(new Set(menuItems.map(item => item.category)));
+  const orderedCategories = adminCategories.length > 0
+    ? [
+        ...adminCategories.filter(category => menuCategories.includes(category)),
+        ...menuCategories.filter(category => !adminCategories.includes(category))
+      ]
+    : menuCategories;
+  const categories = ['All', ...orderedCategories];
 
   return (
     <section
@@ -156,6 +132,14 @@ export default function Menu() {
 
         {/* Menu Grid */}
         <div className="max-w-4xl mx-auto">
+          {menuItems.length === 0 && (
+            <div className="border border-charcoal/10 bg-white/70 p-8 text-center">
+              <h3 className="font-display text-2xl text-charcoal mb-2">No items added yet</h3>
+              <p className="font-body text-sm text-brown">
+                Add items from the admin panel to populate this menu.
+              </p>
+            </div>
+          )}
           {(activeCategory === 'All' ? categories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
             const categoryItems = menuItems.filter(item => item.category === category);
             if (categoryItems.length === 0) return null;
@@ -178,9 +162,6 @@ export default function Menu() {
                         <div className="flex-grow border-b-2 border-dotted border-charcoal/30 shrink relative" style={{ top: '-4px' }}></div>
                         <span className="font-body text-lg text-charcoal font-medium shrink-0">{item.price}</span>
                       </div>
-                      {item.description && (
-                        <p className="font-body text-sm text-brown mt-1 max-w-2xl">{item.description}</p>
-                      )}
                     </div>
                   ))}
                 </div>
