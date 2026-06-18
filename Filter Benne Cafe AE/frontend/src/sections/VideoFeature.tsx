@@ -138,9 +138,9 @@ export default function VideoFeature() {
                   <div>
                     <p className="font-body text-sm text-charcoal font-medium mb-1">Address</p>
                     <p className="font-body text-sm text-brown">
-                      {import.meta.env.VITE_ADDRESS_LINE1 || '5W8H+FVW, Napier Town'}
+                      5W8H+FVW, Napier Town
                       <br />
-                      {import.meta.env.VITE_CAFE_LOCATION || 'Jabalpur'}, {import.meta.env.VITE_CAFE_LOCATION_STATE || 'Madhya Pradesh'} {import.meta.env.VITE_CAFE_PINCODE || '482001'}
+                      Jabalpur, Madhya Pradesh 482001
                     </p>
                   </div>
                 </div>
@@ -150,9 +150,9 @@ export default function VideoFeature() {
                   <div>
                     <p className="font-body text-sm text-charcoal font-medium mb-1">Hours</p>
                     <p className="font-body text-sm text-brown">
-                      {import.meta.env.VITE_TIMINGS_FULL || 'Monday – Sunday'}
+                      Monday - Sunday
                       <br />
-                      {import.meta.env.VITE_TIMINGS_HOURS || '7:30 AM – 10:00 PM'}
+                      9:30 AM - 9:30 PM
                     </p>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function VideoFeature() {
                   <div>
                     <p className="font-body text-sm text-charcoal font-medium mb-1">Contact</p>
                     <p className="font-body text-sm text-brown">
-                      {import.meta.env.VITE_CONTACT_PHONE || '+91 761-XXX-XXXX'}
+                      +91 7489501812
                     </p>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function VideoFeature() {
 
               <div className="mt-10 flex flex-wrap gap-4">
                 <a
-                  href={import.meta.env.VITE_MAP_URL || "https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"}
+                  href="https://www.google.com/maps/place/23%C2%B009'58.4%22N+79%C2%B055'47.0%22E/@23.1662292,79.9271401,17z"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.08em] bg-charcoal text-warm-white px-8 py-4 hover:bg-burnt-orange transition-colors duration-300"
@@ -180,7 +180,7 @@ export default function VideoFeature() {
                 </a>
                 
                 <a
-                  href={import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/filterbenne/"}
+                  href="https://www.instagram.com/filterbenne/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.08em] border border-charcoal text-charcoal px-8 py-4 hover:bg-charcoal hover:text-warm-white transition-colors duration-300"
@@ -210,7 +210,7 @@ export default function VideoFeature() {
                     Location
                   </p>
                   <p className="font-display text-lg text-charcoal">
-                    {import.meta.env.VITE_CAFE_LOCATION || 'Jabalpur'}, {(import.meta.env.VITE_CAFE_LOCATION_STATE || 'Madhya Pradesh').split(' ').map((w: string) => w[0]).join('')}
+                    Jabalpur, MP
                   </p>
                 </div>
               </div>

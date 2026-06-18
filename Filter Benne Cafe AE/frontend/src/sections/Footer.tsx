@@ -45,14 +45,14 @@ export default function Footer() {
             }`}
           >
             <h3 className="font-display text-2xl text-warm-white mb-4">
-              {import.meta.env.VITE_CAFE_NAME || 'Filter & Benne'}
+              Filter & Benne
             </h3>
             <p className="font-body text-[13px] text-warm-white/50 leading-relaxed mb-6">
-              {import.meta.env.VITE_FOOTER_DESCRIPTION || 'Coffee, culture, and the craft of benne. Rooted in Jabalpur, inspired by the South.'}
+              Coffee, culture, and the craft of benne. Rooted in Jabalpur, inspired by the South.
             </p>
             <div className="flex gap-4">
               <a
-                href={import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/filterbenne/"}
+                href="https://www.instagram.com/filterbenne/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 border border-warm-white/20 flex items-center justify-center hover:bg-burnt-orange hover:border-burnt-orange transition-all duration-300"
@@ -66,7 +66,7 @@ export default function Footer() {
                 <Facebook size={16} />
               </a>
               <a
-                href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL || 'hello@filterandbenne.com'}`}
+                href="mailto:hello@filterandbenne.com"
                 className="w-10 h-10 border border-warm-white/20 flex items-center justify-center hover:bg-burnt-orange hover:border-burnt-orange transition-all duration-300"
               >
                 <Mail size={16} />
@@ -116,17 +116,17 @@ export default function Footer() {
             </p>
             <div className="space-y-4">
               <p className="font-body text-[13px] text-warm-white/60 leading-relaxed">
-                {import.meta.env.VITE_ADDRESS_LINE1 || '5W8H+FVW, Napier Town'}
+                5W8H+FVW, Napier Town
                 <br />
-                {import.meta.env.VITE_CAFE_LOCATION || 'Jabalpur'}, {import.meta.env.VITE_CAFE_LOCATION_STATE || 'Madhya Pradesh'}
+                Jabalpur, Madhya Pradesh
                 <br />
-                {import.meta.env.VITE_CAFE_PINCODE || '482001'}
+                482001
               </p>
               <p className="font-body text-[13px] text-warm-white/60">
-                {import.meta.env.VITE_TIMINGS_FULL || 'Mon – Sun'}: {import.meta.env.VITE_TIMINGS_HOURS || '7:30 AM – 10:00 PM'}
+                Monday - Sunday: 9:30 AM - 9:30 PM
               </p>
               <p className="font-body text-[13px] text-warm-white/60">
-                {import.meta.env.VITE_CONTACT_PHONE || '+91 761-XXX-XXXX'}
+                +91 7489501812
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function Footer() {
           }`}
         >
           <p className="font-body text-[11px] text-warm-white/30 tracking-[0.05em]">
-            &copy; {new Date().getFullYear()} {import.meta.env.VITE_CAFE_NAME || 'Filter & Benne'}. All rights reserved.
+            &copy; {new Date().getFullYear()} Filter & Benne. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a href="#" className="font-body text-[11px] text-warm-white/30 hover:text-warm-white/60 transition-colors">
@@ -184,13 +184,13 @@ export default function Footer() {
         {/* Instagram Handle */}
         <div className="mt-12 text-center">
           <a
-            href={import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/filterbenne/"}
+            href="https://www.instagram.com/filterbenne/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.15em] text-warm-white/30 hover:text-burnt-orange transition-colors duration-300"
           >
             <Instagram size={14} />
-            {import.meta.env.VITE_INSTAGRAM_HANDLE || '@filterbenne'}
+            @filterbenne
           </a>
         </div>
       </div>

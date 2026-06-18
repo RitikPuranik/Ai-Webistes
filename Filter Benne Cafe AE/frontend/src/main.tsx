@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 
 // Set page title from env variable
-document.title = import.meta.env.VITE_CAFE_NAME || 'Cafe Website';
+document.title = 'Filter & Benne';
 
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter>

@@ -1,111 +1,168 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Trash2, Save, Lock, Coffee, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description?: string;
-  price: string;
-  category: string;
-  image?: string;
-  tag?: string;
-}
+import {
+  login,
+  clearToken,
+  isAuthenticated,
+  getCategories,
+  addCategory,
+  deleteCategory,
+  reorderCategories,
+  getMenuItems,
+  addMenuItem,
+  deleteMenuItem,
+  reorderMenuItems,
+  type ApiCategory,
+  type ApiMenuItem,
+} from '@/lib/api';
 
 interface AdminPanelProps {
   onClose: () => void;
 }
 
-const defaultCategories = ['Signature', 'Benne Dosas', 'Uttapams', 'Rice', 'Idli', 'Vada', 'Beverages', 'Sweet', 'Breakfast Special'];
-
-const orderCategories = (categoryList: string[]) => {
-  return Array.from(new Set(categoryList));
-};
-
-const categoryDefaultImages: Record<string, string> = {
-  Signature: '/assets/rec_ghee_podi_dosa.jpg',
-  Idli: '/assets/rec_thatte_idli.jpg',
-  Dosa: '/assets/rec_ghee_podi_dosa.jpg',
-  'Benne Dosas': '/assets/rec_ghee_podi_dosa.jpg',
-  Uttapams: '/assets/food_spread.png',
-  Vada: '/assets/food_spread.png',
-  Beverages: '/assets/food_spread.png',
-  Rice: '/assets/rec_bisi_bele_bhath.jpg',
-  Sweet: '/assets/rec_kesari_baat.jpg',
-};
-
-const getDefaultImageForCategory = (category: string) => {
-  return categoryDefaultImages[category] || '/assets/food_spread.png';
-};
-
 export default function AdminPanel({ onClose }: AdminPanelProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
-    const stored = localStorage.getItem('filterbenne_menu');
-    return stored ? JSON.parse(stored) : [];
-  });
-  
-  const [formData, setFormData] = useState<Pick<MenuItem, 'name' | 'price' | 'category'>>({
+  const [loading, setLoading] = useState(false);
+
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [menuItems, setMenuItems] = useState<ApiMenuItem[]>([]);
+
+  const [formData, setFormData] = useState({
     name: '',
     price: '',
-    category: 'Signature',
+    categoryId: '',
   });
 
   const [activeTab, setActiveTab] = useState<'add-item' | 'categories'>('categories');
-  const [categories, setCategories] = useState<string[]>(() => {
-    const stored = localStorage.getItem('filterbenne_categories');
-    return stored ? orderCategories(JSON.parse(stored)) : defaultCategories;
-  });
   const [newCategory, setNewCategory] = useState('');
-  const orderedCategories = orderCategories(categories);
 
-  // Save menu items to localStorage whenever they change
+  // Fetch data from API
+  const fetchData = useCallback(async () => {
+    try {
+      const [cats, items] = await Promise.all([getCategories(), getMenuItems()]);
+      setCategories(cats);
+      setMenuItems(items);
+      // Set default category in form
+      if (cats.length > 0 && !formData.categoryId) {
+        setFormData(prev => ({ ...prev, categoryId: cats[0]._id }));
+      }
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+    }
+  }, []);
+
   useEffect(() => {
-    localStorage.setItem('filterbenne_menu', JSON.stringify(menuItems));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'filterbenne_menu' }));
-  }, [menuItems]);
+    if (isLoggedIn) {
+      fetchData();
+    }
+  }, [isLoggedIn, fetchData]);
 
-  useEffect(() => {
-    localStorage.setItem('filterbenne_categories', JSON.stringify(orderCategories(categories)));
-  }, [categories]);
+  // Dispatch a custom event so Menu.tsx can refresh
+  const notifyMenuUpdate = () => {
+    window.dispatchEvent(new CustomEvent('menu-updated'));
+  };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    const correctPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
-    // Simple password - in real app this would be server-side
-    if (password === correctPassword) {
-      setIsLoggedIn(true);
-      setLoginError('');
-    } else {
-      setLoginError('Invalid password.');
+  const handleMigrateLocalStorage = async () => {
+    try {
+      setLoading(true);
+      const storedCategories = localStorage.getItem('filterbenne_categories');
+      const storedMenu = localStorage.getItem('filterbenne_menu');
+
+      let currentCats = [...categories];
+
+      if (storedCategories) {
+        const catNames = JSON.parse(storedCategories) as string[];
+        for (const name of catNames) {
+          if (!currentCats.find(c => c.name === name)) {
+            const newCat = await addCategory(name);
+            currentCats.push(newCat);
+          }
+        }
+      }
+
+      if (storedMenu) {
+        const items = JSON.parse(storedMenu);
+        for (const item of items) {
+          // Find category ID
+          const cat = currentCats.find(c => c.name === item.category);
+          if (cat && !menuItems.find(m => m.name === item.name)) {
+            const newItem = await addMenuItem({
+              name: item.name,
+              price: item.price,
+              categoryId: cat._id,
+            });
+            setMenuItems(prev => [...prev, newItem]);
+          }
+        }
+      }
+
+      toast.success('Migration complete', {
+        description: 'Local storage data has been uploaded to the database.',
+      });
+      fetchData();
+      notifyMenuUpdate();
+      localStorage.removeItem('filterbenne_menu'); // Clear after migration
+      localStorage.removeItem('filterbenne_categories');
+    } catch (error) {
+      console.error(error);
+      toast.error('Migration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSaveItem = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const newItem: MenuItem = {
-      id: Date.now().toString(),
-      ...formData,
-      image: getDefaultImageForCategory(formData.category),
-    };
-    setMenuItems(prev => [...prev, newItem]);
-    
-    setFormData({
-      name: '',
-      price: '',
-      category: categories[0] || 'Benne Dosas',
-    });
-    toast.success('Menu item added', {
-      description: `${newItem.name} is now live in ${newItem.category}.`,
-    });
+    setLoading(true);
+    try {
+      await login(password);
+      setIsLoggedIn(true);
+      setLoginError('');
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : 'Invalid password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    clearToken();
+    setIsLoggedIn(false);
+    setPassword('');
+  };
+
+  // ─── Menu Item Handlers ──────────────────────────────────────────
+
+  const handleSaveItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const newItem = await addMenuItem({
+        name: formData.name,
+        price: formData.price,
+        categoryId: formData.categoryId,
+      });
+      setMenuItems(prev => [...prev, newItem]);
+      setFormData(prev => ({
+        name: '',
+        price: '',
+        categoryId: prev.categoryId,
+      }));
+      toast.success('Menu item added', {
+        description: `${newItem.name} is now live in ${newItem.category}.`,
+      });
+      notifyMenuUpdate();
+    } catch (err: unknown) {
+      toast.error('Failed to add item', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
   };
 
   const handleDeleteItem = (id: string) => {
-    const itemToDelete = menuItems.find(item => item.id === id);
+    const itemToDelete = menuItems.find(item => item._id === id);
     if (!itemToDelete) return;
 
     toast.warning('Remove this menu item?', {
@@ -113,9 +170,17 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       duration: 9000,
       action: {
         label: 'Delete',
-        onClick: () => {
-          setMenuItems(prev => prev.filter(item => item.id !== id));
-          toast.success('Item removed');
+        onClick: async () => {
+          try {
+            await deleteMenuItem(id);
+            setMenuItems(prev => prev.filter(item => item._id !== id));
+            toast.success('Item removed');
+            notifyMenuUpdate();
+          } catch (err: unknown) {
+            toast.error('Failed to delete', {
+              description: err instanceof Error ? err.message : 'Unknown error',
+            });
+          }
         },
       },
       cancel: {
@@ -125,34 +190,90 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     });
   };
 
-  const handleAddCategory = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      const addedCategory = newCategory.trim();
-      setCategories(prev => orderCategories([...prev, addedCategory]));
-      toast.success('Category added', {
-        description: `${addedCategory} is now available in the item form.`,
-      });
-      setNewCategory('');
-      return;
-    }
+  const handleMoveItemUp = async (itemId: string, categoryName: string) => {
+    const categoryItems = menuItems.filter(item => item.category === categoryName);
+    const index = categoryItems.findIndex(item => item._id === itemId);
+    if (index <= 0) return;
 
+    const newCategoryItems = [...categoryItems];
+    [newCategoryItems[index - 1], newCategoryItems[index]] = [newCategoryItems[index], newCategoryItems[index - 1]];
+
+    // Update local state immediately
+    const newMenuItems = menuItems.map(item => {
+      const newIndex = newCategoryItems.findIndex(ci => ci._id === item._id);
+      if (newIndex !== -1) {
+        return { ...item, sortOrder: newIndex };
+      }
+      return item;
+    });
+    setMenuItems(newMenuItems);
+
+    try {
+      await reorderMenuItems(newCategoryItems.map(item => item._id));
+      notifyMenuUpdate();
+    } catch (err) {
+      console.error('Reorder failed:', err);
+      fetchData(); // Rollback on error
+    }
+  };
+
+  const handleMoveItemDown = async (itemId: string, categoryName: string) => {
+    const categoryItems = menuItems.filter(item => item.category === categoryName);
+    const index = categoryItems.findIndex(item => item._id === itemId);
+    if (index === -1 || index >= categoryItems.length - 1) return;
+
+    const newCategoryItems = [...categoryItems];
+    [newCategoryItems[index + 1], newCategoryItems[index]] = [newCategoryItems[index], newCategoryItems[index + 1]];
+
+    // Update local state immediately
+    const newMenuItems = menuItems.map(item => {
+      const newIndex = newCategoryItems.findIndex(ci => ci._id === item._id);
+      if (newIndex !== -1) {
+        return { ...item, sortOrder: newIndex };
+      }
+      return item;
+    });
+    setMenuItems(newMenuItems);
+
+    try {
+      await reorderMenuItems(newCategoryItems.map(item => item._id));
+      notifyMenuUpdate();
+    } catch (err) {
+      console.error('Reorder failed:', err);
+      fetchData(); // Rollback on error
+    }
+  };
+
+  // ─── Category Handlers ───────────────────────────────────────────
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!newCategory.trim()) {
       toast.error('Category name is required');
       return;
     }
 
-    toast.info('Category already exists', {
-      description: 'Try a different name.',
-    });
+    try {
+      const cat = await addCategory(newCategory.trim());
+      setCategories(prev => [...prev, cat]);
+      toast.success('Category added', {
+        description: `${cat.name} is now available in the item form.`,
+      });
+      setNewCategory('');
+      notifyMenuUpdate();
+    } catch (err: unknown) {
+      toast.error('Failed to add category', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
   };
 
-  const handleDeleteCategory = (cat: string) => {
-    const categoryItems = menuItems.filter(item => item.category === cat);
+  const handleDeleteCategory = (cat: ApiCategory) => {
+    const categoryItems = menuItems.filter(item => item.category === cat.name);
 
     if (categoryItems.length > 0) {
       toast.error('Delete all items first', {
-        description: `${cat} still has ${categoryItems.length} item${categoryItems.length === 1 ? '' : 's'} in it. Remove those items before deleting the category.`,
+        description: `${cat.name} still has ${categoryItems.length} item${categoryItems.length === 1 ? '' : 's'} in it. Remove those items before deleting the category.`,
       });
       return;
     }
@@ -162,11 +283,19 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       duration: 9000,
       action: {
         label: 'Delete',
-        onClick: () => {
-          setCategories(prev => orderCategories(prev.filter(c => c !== cat)));
-          toast.success('Category deleted', {
-            description: `${cat} has been removed from filters.`,
-          });
+        onClick: async () => {
+          try {
+            await deleteCategory(cat._id);
+            setCategories(prev => prev.filter(c => c._id !== cat._id));
+            toast.success('Category deleted', {
+              description: `${cat.name} has been removed from filters.`,
+            });
+            notifyMenuUpdate();
+          } catch (err: unknown) {
+            toast.error('Failed to delete', {
+              description: err instanceof Error ? err.message : 'Unknown error',
+            });
+          }
         },
       },
       cancel: {
@@ -176,71 +305,41 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     });
   };
 
-  const handleMoveCategoryUp = (index: number) => {
-    if (index > 0) {
-      setCategories(prev => {
-        const newCats = [...prev];
-        [newCats[index - 1], newCats[index]] = [newCats[index], newCats[index - 1]];
-        return orderCategories(newCats);
-      });
+  const handleMoveCategoryUp = async (index: number) => {
+    if (index <= 0) return;
+
+    const newCats = [...categories];
+    [newCats[index - 1], newCats[index]] = [newCats[index], newCats[index - 1]];
+    setCategories(newCats);
+
+    try {
+      const updated = await reorderCategories(newCats.map(c => c._id));
+      setCategories(updated);
+      notifyMenuUpdate();
+    } catch (err) {
+      console.error('Reorder failed:', err);
+      fetchData();
     }
   };
 
-  const handleMoveCategoryDown = (index: number) => {
-    if (index < categories.length - 1) {
-      setCategories(prev => {
-        const newCats = [...prev];
-        [newCats[index + 1], newCats[index]] = [newCats[index], newCats[index + 1]];
-        return orderCategories(newCats);
-      });
+  const handleMoveCategoryDown = async (index: number) => {
+    if (index >= categories.length - 1) return;
+
+    const newCats = [...categories];
+    [newCats[index + 1], newCats[index]] = [newCats[index], newCats[index + 1]];
+    setCategories(newCats);
+
+    try {
+      const updated = await reorderCategories(newCats.map(c => c._id));
+      setCategories(updated);
+      notifyMenuUpdate();
+    } catch (err) {
+      console.error('Reorder failed:', err);
+      fetchData();
     }
   };
 
-  const handleMoveItemUp = (itemId: string) => {
-    setMenuItems(prev => {
-      const index = prev.findIndex(item => item.id === itemId);
-      if (index === -1) return prev;
-      const item = prev[index];
-      
-      let prevSameCategoryIndex = -1;
-      for (let i = index - 1; i >= 0; i--) {
-        if (prev[i].category === item.category) {
-          prevSameCategoryIndex = i;
-          break;
-        }
-      }
-
-      if (prevSameCategoryIndex !== -1) {
-        const newItems = [...prev];
-        [newItems[prevSameCategoryIndex], newItems[index]] = [newItems[index], newItems[prevSameCategoryIndex]];
-        return newItems;
-      }
-      return prev;
-    });
-  };
-
-  const handleMoveItemDown = (itemId: string) => {
-    setMenuItems(prev => {
-      const index = prev.findIndex(item => item.id === itemId);
-      if (index === -1) return prev;
-      const item = prev[index];
-      
-      let nextSameCategoryIndex = -1;
-      for (let i = index + 1; i < prev.length; i++) {
-        if (prev[i].category === item.category) {
-          nextSameCategoryIndex = i;
-          break;
-        }
-      }
-
-      if (nextSameCategoryIndex !== -1) {
-        const newItems = [...prev];
-        [newItems[nextSameCategoryIndex], newItems[index]] = [newItems[index], newItems[nextSameCategoryIndex]];
-        return newItems;
-      }
-      return prev;
-    });
-  };
+  // ─── Login Screen ────────────────────────────────────────────────
 
   if (!isLoggedIn) {
     return (
@@ -274,9 +373,10 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
             <button
               type="submit"
-              className="w-full bg-charcoal text-warm-white font-body text-xs uppercase tracking-[0.08em] py-4 hover:bg-burnt-orange transition-colors duration-300"
+              disabled={loading}
+              className="w-full bg-charcoal text-warm-white font-body text-xs uppercase tracking-[0.08em] py-4 hover:bg-burnt-orange transition-colors duration-300 disabled:opacity-50"
             >
-              Login
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
@@ -290,6 +390,8 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
       </div>
     );
   }
+
+  // ─── Admin Panel ─────────────────────────────────────────────────
 
   return (
     <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -378,13 +480,13 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                         Category *
                       </label>
                       <select
-                        value={formData.category}
-                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                        value={formData.categoryId}
+                        onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
                         className="w-full border border-charcoal/20 px-3 py-2 font-body text-sm bg-transparent focus:border-burnt-orange transition-colors"
                       >
-                        {orderedCategories.map(cat => (
-                          <option key={cat} value={cat}>
-                            {cat}
+                        {categories.map(cat => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
                           </option>
                         ))}
                       </select>
@@ -426,11 +528,11 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               <div className="space-y-2">
                 {categories.map((cat, index) => (
                   <div
-                    key={cat}
+                    key={cat._id}
                     className="flex flex-col p-4 bg-white border border-charcoal/5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-body text-sm text-charcoal">{cat}</span>
+                      <span className="font-body text-sm text-charcoal">{cat.name}</span>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -459,12 +561,12 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     </div>
                     
                     {(() => {
-                      const categoryItems = menuItems.filter(item => item.category === cat);
+                      const categoryItems = menuItems.filter(item => item.category === cat.name);
                       if (categoryItems.length === 0) return null;
                       return (
                         <div className="mt-4 pt-3 border-t border-charcoal/10 space-y-2">
                           {categoryItems.map((item, itemIndex) => (
-                            <div key={item.id} className="flex items-center justify-between bg-warm-white p-2 border border-charcoal/5">
+                            <div key={item._id} className="flex items-center justify-between bg-warm-white p-2 border border-charcoal/5">
                               <div className="flex items-center gap-3">
                                 <div>
                                   <span className="font-body text-xs text-charcoal font-medium block">{item.name}</span>
@@ -474,7 +576,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                               <div className="flex items-center gap-1">
                                 <button
                                   type="button"
-                                  onClick={() => handleMoveItemUp(item.id)}
+                                  onClick={() => handleMoveItemUp(item._id, cat.name)}
                                   disabled={itemIndex === 0}
                                   className={`w-6 h-6 flex items-center justify-center transition-colors ${itemIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
                                   title="Move Up"
@@ -483,7 +585,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleMoveItemDown(item.id)}
+                                  onClick={() => handleMoveItemDown(item._id, cat.name)}
                                   disabled={itemIndex === categoryItems.length - 1}
                                   className={`w-6 h-6 flex items-center justify-center transition-colors ${itemIndex === categoryItems.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-charcoal/10'}`}
                                   title="Move Down"
@@ -492,7 +594,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleDeleteItem(item.id)}
+                                  onClick={() => handleDeleteItem(item._id)}
                                   className="w-6 h-6 flex items-center justify-center hover:bg-red-50 transition-colors ml-1"
                                   title="Remove item"
                                 >
@@ -519,11 +621,22 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-charcoal/10 flex items-center justify-between">
-          <p className="font-body text-[10px] text-brown">
-            Press Ctrl+A to toggle this panel
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="font-body text-[10px] text-brown">
+              Press Ctrl+A to toggle this panel
+            </p>
+            {localStorage.getItem('filterbenne_menu') && (
+              <button
+                onClick={handleMigrateLocalStorage}
+                disabled={loading}
+                className="font-body text-[10px] uppercase tracking-[0.08em] text-burnt-orange hover:text-charcoal transition-colors disabled:opacity-50"
+              >
+                {loading ? 'Migrating...' : 'Migrate Local Data'}
+              </button>
+            )}
+          </div>
           <button
-            onClick={() => setIsLoggedIn(false)}
+            onClick={handleLogout}
             className="font-body text-[11px] uppercase tracking-[0.08em] text-brown hover:text-charcoal transition-colors"
           >
             Logout

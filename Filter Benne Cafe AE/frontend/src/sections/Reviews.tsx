@@ -113,7 +113,7 @@ export default function Reviews() {
                 TALKS
               </h2>
               <p className="font-body text-base md:text-lg text-brown max-w-md mx-auto leading-relaxed">
-                At {import.meta.env.VITE_CAFE_NAME || 'Filter & Benne'}, we serve authentic Davangere flavors, daring you to rediscover the true taste of tradition with every bite.
+                At Filter & Benne, we serve authentic Davangere flavors, daring you to rediscover the true taste of tradition with every bite.
               </p>
             </div>
             
@@ -150,7 +150,7 @@ export default function Reviews() {
               TALKS
             </h2>
             <p className="font-body text-sm md:text-base text-brown">
-               At {import.meta.env.VITE_CAFE_NAME || 'Filter & Benne'}, we serve authentic Davangere flavors, daring you to rediscover the true taste of tradition with every bite.
+               At Filter & Benne, we serve authentic Davangere flavors, daring you to rediscover the true taste of tradition with every bite.
             </p>
           </div>
           <div className="columns-1 sm:columns-2 gap-6">

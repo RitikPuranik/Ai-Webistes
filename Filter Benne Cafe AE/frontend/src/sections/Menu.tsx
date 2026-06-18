@@ -1,44 +1,39 @@
-import { useEffect, useRef, useState } from 'react';
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description?: string;
-  price: string;
-  category: string;
-  image?: string;
-  tag?: string;
-}
-
-const normalizeLabel = (value: string) => {
-  const labelMap: Record<string, string> = {
-    'Heritage Uttapams': 'Uttapams',
-    'Traditional Sweert Finishes': 'Sweet',
-    Desserts: 'Sweet',
-  };
-
-  return labelMap[value] || value;
-};
-
-const normalizeMenuItem = (item: MenuItem): MenuItem => ({
-  ...item,
-  category: normalizeLabel(item.category),
-  tag: item.tag ? normalizeLabel(item.tag) : item.tag,
-});
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { getMenuItems, getCategories, type ApiMenuItem, type ApiCategory } from '@/lib/api';
 
 export default function Menu() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
-    const stored = localStorage.getItem('filterbenne_menu');
-    return stored ? JSON.parse(stored).map(normalizeMenuItem) : [];
-  });
+  const [menuItems, setMenuItems] = useState<ApiMenuItem[]>([]);
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [adminCategories, setAdminCategories] = useState<string[]>(() => {
-    const stored = localStorage.getItem('filterbenne_categories');
-    return stored ? JSON.parse(stored) : [];
-  });
 
+  const fetchData = useCallback(async () => {
+    try {
+      const [items, cats] = await Promise.all([getMenuItems(), getCategories()]);
+      setMenuItems(items);
+      setCategories(cats);
+    } catch (err) {
+      console.error('Failed to fetch menu data:', err);
+    }
+  }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Listen for admin panel updates
+  useEffect(() => {
+    const handleMenuUpdate = () => {
+      fetchData();
+    };
+
+    window.addEventListener('menu-updated', handleMenuUpdate);
+    return () => window.removeEventListener('menu-updated', handleMenuUpdate);
+  }, [fetchData]);
+
+  // Intersection observer for scroll animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -57,32 +52,17 @@ export default function Menu() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const handleStorage = () => {
-      const storedMenu = localStorage.getItem('filterbenne_menu');
-      if (storedMenu) {
-        setMenuItems(JSON.parse(storedMenu).map(normalizeMenuItem));
-      } else {
-        setMenuItems([]);
-      }
-      const storedCats = localStorage.getItem('filterbenne_categories');
-      if (storedCats) {
-        setAdminCategories(JSON.parse(storedCats));
-      }
-    };
+  // Build ordered category names from API sort order
+  const orderedCategoryNames = categories
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(c => c.name);
 
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
-  const menuCategories = Array.from(new Set(menuItems.map(item => item.category)));
-  const orderedCategories = adminCategories.length > 0
-    ? [
-        ...adminCategories.filter(category => menuCategories.includes(category)),
-        ...menuCategories.filter(category => !adminCategories.includes(category))
-      ]
-    : menuCategories;
-  const categories = ['All', ...orderedCategories];
+  // Only show categories that have menu items
+  const menuCategoryNames = Array.from(new Set(menuItems.map(item => item.category)));
+  const displayCategories = orderedCategoryNames.filter(name => menuCategoryNames.includes(name));
+  // Add any categories from menu items that aren't in the admin list
+  const extraCategories = menuCategoryNames.filter(name => !displayCategories.includes(name));
+  const allFilterCategories = ['All', ...displayCategories, ...extraCategories];
 
   return (
     <section
@@ -115,7 +95,7 @@ export default function Menu() {
             visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          {categories.map(cat => (
+          {allFilterCategories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -140,7 +120,7 @@ export default function Menu() {
               </p>
             </div>
           )}
-          {(activeCategory === 'All' ? categories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
+          {(activeCategory === 'All' ? allFilterCategories.filter(c => c !== 'All') : [activeCategory]).map((category, catIndex) => {
             const categoryItems = menuItems.filter(item => item.category === category);
             if (categoryItems.length === 0) return null;
 
@@ -156,7 +136,7 @@ export default function Menu() {
                 <div className="w-full h-[1px] bg-charcoal mb-8"></div>
                 <div className="flex flex-col space-y-6">
                   {categoryItems.map(item => (
-                    <div key={item.id} className="flex flex-col">
+                    <div key={item._id} className="flex flex-col">
                       <div className="flex justify-between items-baseline gap-4 w-full">
                         <h4 className="font-body text-lg text-charcoal shrink-0">{item.name}</h4>
                         <div className="flex-grow border-b-2 border-dotted border-charcoal/30 shrink relative" style={{ top: '-4px' }}></div>
