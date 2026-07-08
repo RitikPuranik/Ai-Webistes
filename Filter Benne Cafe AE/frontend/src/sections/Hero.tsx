@@ -4,13 +4,15 @@ import { ChevronDown, MapPin } from 'lucide-react';
 const headlines = [
   { main: 'Ghee & Grace', sub: 'South Indian soul' },
   { main: 'Slow Brewed', sub: 'Patience in every cup' },
-  { main: 'Filter & Benne', sub: 'Coffee, culture, craft' },
+  { main: 'Authentic Flavors', sub: 'Taste the tradition' },
+  { main: 'Crispy & Golden', sub: 'Perfectly crafted delights' },
 ];
 
 const heroImages = [
   '/assets/food_spread.png',
   '/assets/ambience_interior.jpg',
-  '/assets/ambience_mural.png',
+  '/pics/IMG_0871.JPG',
+  '/pics/IMG_0838.JPG',
 ];
 
 export default function Hero() {

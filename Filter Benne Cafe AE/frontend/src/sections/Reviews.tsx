@@ -10,7 +10,8 @@ const reviewsData = [
   { id: 7, src: '/reviews/seventh.mp4', link: 'https://www.instagram.com/reel/DZSryK5NR_N/?igsh=dHY0ZHJrMzM0ZTdj' },
   { id: 3, src: '/reviews/third.mp4', link: 'https://www.instagram.com/reel/DZDftftz7sM/?igsh=MWNzNnkyOTMwZ3k2bQ==' },
   { id: 8, src: '/reviews/eight.mp4', link: 'https://www.instagram.com/reel/DZFsGrGTeOK/?igsh=MTdtcTA3czI3dGF5eA==' },
-  { id: 6, src: '/reviews/sixth.mp4', link: 'https://www.instagram.com/reel/DY49DzPsOP8/?igsh=ZHFrODNtbjk4a3M1' }
+  { id: 6, src: '/reviews/sixth.mp4', link: 'https://www.instagram.com/reel/DY49DzPsOP8/?igsh=ZHFrODNtbjk4a3M1' },
+  { id: 11,src: '/reviews/eleventh.mp4', link: 'https://www.instagram.com/reel/DY49DzPsOP8/?i'}
 ];
 
 const VideoCard = ({ review }: { review: typeof reviewsData[0] }) => {
@@ -107,12 +108,9 @@ export default function Reviews() {
             {/* Header taking full width of this middle section */}
             <div className="text-center pt-4 pb-12">
               <h2 className="font-display text-5xl md:text-7xl lg:text-[5.5rem] text-[#3e2723] uppercase tracking-tighter mb-6 leading-none flex items-center justify-center gap-4">
-                TASTY
-                <div className="flex flex-col gap-1 w-12 md:w-20">
-                  <span className="w-full h-1 bg-[#3e2723]"></span>
-                  <span className="w-full h-1 bg-[#3e2723]"></span>
-                </div>
-                TALKS
+                TASTY = TALKS
+                
+        
               </h2>
               <p className="font-body text-base md:text-lg text-brown max-w-md mx-auto leading-relaxed">
                 At Filter & Benne, we serve authentic Davangere flavors, daring you to rediscover the true taste of tradition with every bite.
@@ -124,10 +122,13 @@ export default function Reviews() {
               <div className="flex-1 flex flex-col gap-6">
                 <VideoCard review={reviewsData[1]} />
                 <VideoCard review={reviewsData[5]} />
+                <VideoCard review={reviewsData[10]} />
+
               </div>
               <div className="flex-1 flex flex-col gap-6 pt-12">
                 <VideoCard review={reviewsData[2]} />
                 <VideoCard review={reviewsData[6]} />
+                
               </div>
             </div>
           </div>
@@ -137,6 +138,7 @@ export default function Reviews() {
             <VideoCard review={reviewsData[3]} />
             <VideoCard review={reviewsData[7]} />
             <VideoCard review={reviewsData[9]} />
+            
           </div>
         </div>
 

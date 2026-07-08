@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Instagram, Facebook, Mail, ArrowRight } from 'lucide-react';
+import { Instagram, Mail, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Footer() {
@@ -59,12 +59,7 @@ export default function Footer() {
               >
                 <Instagram size={16} />
               </a>
-              <a
-                href="#"
-                className="w-10 h-10 border border-warm-white/20 flex items-center justify-center hover:bg-burnt-orange hover:border-burnt-orange transition-all duration-300"
-              >
-                <Facebook size={16} />
-              </a>
+          
               <a
                 href="mailto:hello@filterandbenne.com"
                 className="w-10 h-10 border border-warm-white/20 flex items-center justify-center hover:bg-burnt-orange hover:border-burnt-orange transition-all duration-300"

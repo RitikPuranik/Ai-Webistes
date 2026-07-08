@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 const showcaseItems = [
   {
     id: 1,
-    name: "Benne Masala Dosa",
+    name: "Benne Mysore Masala Dosa",
     description: "Crispy on the outside, soft on the inside, and generously smeared with our signature golden benne. Served with fresh coconut chutney and piping hot sambar.",
     image: "/assets/rec_ghee_podi_dosa.jpg"
   },
@@ -15,7 +15,7 @@ const showcaseItems = [
   },
   {
     id: 3,
-    name: "Bisi Bele Bhath",
+    name: "Bisi Bele Bath",
     description: "A warming hug in a bowl. Rice and lentils slow-cooked with fresh vegetables, tamarind, and our house-ground spice blend, topped with crunchy boondi.",
     image: "/assets/rec_bisi_bele_bhath.jpg"
   },
@@ -27,7 +27,7 @@ const showcaseItems = [
   },
   {
     id: 5,
-    name: "Kesari Baat",
+    name: "Kesari Bath",
     description: "The perfect sweet ending. Semolina roasted in ghee, cooked with saffron, and studded with roasted cashews and raisins.",
     image: "/assets/rec_kesari_baat.jpg"
   }

@@ -97,14 +97,15 @@ export default function About() {
 
               {/* Secondary floating image */}
               <div
-                className={`absolute -top-8 -right-4 md:-right-8 w-32 md:w-48 aspect-square overflow-hidden shadow-2xl transition-all duration-700 delay-500 ${
+                className={`absolute -top-8 -right-4  md:-right-8 w-32 rounded-full  md:w-48 aspect-square overflow-hidden shadow-2xl transition-all duration-700 delay-500 ${
                   visible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'
                 }`}
               >
                 <img
-                  src="/assets/logo.jpg"
+                  src="/assets/logo.png"
                   alt="Filter & Benne logo"
-                  className="w-full h-full object-cover"
+                  className=" rounded-full w-full h-full"
+        
                 />
               </div>
             </div>
